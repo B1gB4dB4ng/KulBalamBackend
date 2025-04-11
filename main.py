@@ -1,6 +1,22 @@
 import datetime
 from fastapi import FastAPI, WebSocketDisconnect
-from router import join, user, userwall,comment, group, group_post, friendship, images, order_lines, orders, product, reviews, statistics, test_data
+from router import (
+    join,
+    post_likes,
+    user,
+    userwall,
+    comment,
+    group,
+    group_post,
+    friendship,
+    images,
+    order_lines,
+    orders,
+    product,
+    reviews,
+    statistics,
+    test_data,
+)
 from db import models
 from db.database import engine
 from auth import authentication
@@ -10,7 +26,7 @@ from router.client import html
 from fastapi.websockets import WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
-app=FastAPI()
+app = FastAPI()
 app.include_router(authentication.router)
 app.include_router(user.router)
 app.include_router(userwall.router)
@@ -26,8 +42,9 @@ app.include_router(orders.router)
 app.include_router(order_lines.router)
 app.include_router(test_data.router)
 app.include_router(reviews.router)
+app.include_router(post_likes.router)
 
-#This enables comunication between localhost 8000 and 3000
+# This enables comunication between localhost 8000 and 3000
 origins = ["*"]
 
 app.add_middleware(
@@ -38,9 +55,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get('/')
+
+@app.get("/")
 def index():
-    return {'message': 'Hello! Welcome to KUL-BALAM'}
+    return {"message": "Hello! Welcome to KUL-BALAM"}
 
 
 class ConnectionManager:
@@ -52,7 +70,9 @@ class ConnectionManager:
         self.active_connections.append((client_id, websocket))
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections = [(c_id, ws) for c_id, ws in self.active_connections if ws != websocket]
+        self.active_connections = [
+            (c_id, ws) for c_id, ws in self.active_connections if ws != websocket
+        ]
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
@@ -61,11 +81,14 @@ class ConnectionManager:
         for _, websocket in self.active_connections:
             await websocket.send_text(message)
 
+
 manager = ConnectionManager()
+
 
 @app.get("/message")
 async def get():
     return HTMLResponse(html)
+
 
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
@@ -82,12 +105,12 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
         await manager.broadcast(f"[{now}] User {client_id} left the chat")
 
 
-#@app.on_event("startup")
-#def startup_event():
+# @app.on_event("startup")
+# def startup_event():
 #    insert_admin()
 
 
-models.Base.metadata.create_all(engine)  #db engine
+models.Base.metadata.create_all(engine)  # db engine
 
-app.mount('/images', StaticFiles(directory='images'), name='images')
-app.mount('/productimages', StaticFiles(directory='productimages'), name='productimages')
+# app.mount('/images', StaticFiles(directory='images'), name='images')
+# app.mount('/productimages', StaticFiles(directory='productimages'), name='productimages')
