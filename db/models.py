@@ -93,6 +93,7 @@ class DbPost(Base):
     comments = relationship("DbComment", back_populates="post", cascade="all, delete")
     # Relationship with likes
     likes = relationship("PostLike", back_populates="post", cascade="all, delete")
+    user = relationship("DbUser", back_populates="posts")
 
 
 class DbPostImage(Base):
