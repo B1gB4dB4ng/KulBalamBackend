@@ -2,6 +2,7 @@ import datetime
 from fastapi import FastAPI, WebSocketDisconnect
 from router import (
     join,
+    post_likes,
     user,
     userwall,
     comment,
@@ -41,6 +42,7 @@ app.include_router(orders.router)
 app.include_router(order_lines.router)
 app.include_router(test_data.router)
 app.include_router(reviews.router)
+app.include_router(post_likes.router)
 
 # This enables comunication between localhost 8000 and 3000
 origins = ["*"]
